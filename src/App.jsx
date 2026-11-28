@@ -10,6 +10,9 @@ import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTimer } from './hooks/useTimer'
 import { playCompletionTone, primeCompletionAudio } from './utils/audioUtils'
 import { addStudyCompletion, sanitizeDailyStats } from './utils/statsUtils'
+import StudyRecord from './components/StudyRecord'
+import { useStudyLog } from './hooks/useStudyLog'
+
 import {
   DEFAULT_SETTINGS,
   formatTime,
@@ -38,6 +41,8 @@ function isTypingTarget(target) {
 }
 
 export default function App() {
+  const {studyLog, addRecord} = useStudyLog()
+
   const [storedSettings, setStoredSettings] = useLocalStorage(STORAGE_KEYS.settings, DEFAULT_SETTINGS)
   const [storedTheme, setStoredTheme] = useLocalStorage(STORAGE_KEYS.theme, getInitialTheme)
   const [storedSoundEnabled, setStoredSoundEnabled] = useLocalStorage(STORAGE_KEYS.soundEnabled, true)
@@ -70,8 +75,9 @@ export default function App() {
       : getDateKey(completedAt)
 
     setStoredDailyStats((current) => addStudyCompletion(current, completionDate, minutes))
+    addRecord(completionDate, '??과목', minutes)
     setDateKey(getDateKey())
-  }, [setStoredDailyStats])
+  }, [setStoredDailyStats, addRecord])
 
   const playCompletionSound = useCallback(() => {
     if (!soundEnabled) return
@@ -314,6 +320,7 @@ export default function App() {
           </section>
           <KeyboardHelp />
         </div>
+        <StudyRecord records={studyLog} />
       </main>
 
       <footer>
